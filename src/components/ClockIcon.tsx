@@ -43,11 +43,17 @@ export function ClockIcon({ fraction = 0, hours, size = 20, className }: ClockIc
   return (
     <span
       className={`clock-icon${className ? ` ${className}` : ''}`}
-      style={{
-        width: size,
-        height: size,
-        background: `conic-gradient(currentColor ${deg}deg, var(--accent-bg) ${deg}deg 360deg)`,
-      }}
-    />
+      style={{ width: size, height: size }}
+    >
+      {/* Rendered as an inset inner circle (not a background on the bordered
+          element itself) to avoid a browser rendering seam where a
+          conic-gradient bleeds through a translucent border. */}
+      <span
+        className="clock-icon__fill"
+        style={{
+          background: `conic-gradient(currentColor ${deg}deg, var(--clock-icon-track, var(--accent-bg)) ${deg}deg 360deg)`,
+        }}
+      />
+    </span>
   );
 }

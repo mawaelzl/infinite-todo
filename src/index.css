@@ -65,6 +65,20 @@ body {
   overflow: hidden;
 }
 
+html {
+  /* Kill the default blue/grey tap-highlight flash on mobile browsers. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+[role='button'],
+[role='slider'],
+label {
+  -webkit-tap-highlight-color: transparent;
+}
+
 h1,
 h2 {
   font-family: var(--heading);

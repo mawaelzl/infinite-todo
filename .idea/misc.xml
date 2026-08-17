@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="GithubDefaultAccount">
-    <option name="defaultAccountId" value="ad8f9fd5-256b-4050-b520-728ce875ac29" />
-  </component>
-  <component name="KubernetesApiProvider">{}</component>
+  <component name="KubernetesApiProvider"><![CDATA[{}]]></component>
   <component name="ProjectRootManager" version="2">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
