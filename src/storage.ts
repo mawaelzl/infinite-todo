@@ -70,6 +70,17 @@ export function createTodoId(): string {
 }
 
 /**
+ * Groups a day's todos so all checked items come before all unchecked items,
+ * preserving each group's existing relative order (stable partition). Keeps
+ * the list tidy as items get checked/unchecked and carried over.
+ */
+export function orderTodos(todos: Todo[]): Todo[] {
+  const checked = todos.filter((t) => t.done);
+  const unchecked = todos.filter((t) => !t.done);
+  return [...checked, ...unchecked];
+}
+
+/**
  * Moves every incomplete todo from a past date into today's list, removing it
  * from its original day. Completed todos are left untouched on their original
  * day (read-only history). Returns a new store; does not mutate the input.
@@ -87,12 +98,12 @@ export function applyCarryOver(store: TodoStore): TodoStore {
       if (remaining.length > 0) next[key] = remaining;
       carried.push(...incomplete);
     } else {
-      next[key] = todos;
+      next[key] = orderTodos(todos);
     }
   }
 
   const existingToday = store[today] ?? [];
-  const merged = [...existingToday, ...carried];
+  const merged = orderTodos([...existingToday, ...carried]);
   if (merged.length > 0) next[today] = merged;
 
   return next;
