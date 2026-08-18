@@ -305,7 +305,7 @@
   background: var(--sparkle-color);
   opacity: 0;
   pointer-events: none;
-  animation: sparkle-burst 0.6s ease-out forwards;
+  animation: sparkle-burst var(--sparkle-duration, 0.6s) ease-out forwards;
   animation-delay: var(--sparkle-delay);
 }
 

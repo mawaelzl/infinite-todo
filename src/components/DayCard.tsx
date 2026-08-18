@@ -61,6 +61,11 @@ export function DayCard({
     [todos],
   );
 
+  const checkedCount = useMemo(
+    () => todos.filter((todo) => todo.done).length,
+    [todos],
+  );
+
   const remainingMinutes = useMemo(() => {
     const undoneWithDuration = todos.filter(
       (todo) => !todo.done && todo.durationMinutes !== undefined,
@@ -108,6 +113,7 @@ export function DayCard({
                 disabled={past}
                 onChange={() => onToggle(todo.id)}
                 aria-label={todo.text}
+                checkedCount={checkedCount}
               />
               <span className="todo-item__text">
                 <span className="todo-item__text-inner">{todo.text}</span>
