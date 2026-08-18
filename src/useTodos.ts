@@ -2,16 +2,41 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Todo, TodoStore } from './types';
 import {
   applyCarryOver,
+  consumeDailyReview,
   createTodoId,
   isPastKey,
   loadStore,
   orderTodos,
   saveStore,
   todayKey,
+  type DailyReview,
 } from './storage';
+
+const FORCE_DAILY_REVIEW = import.meta.env.VITE_FORCE_DAILY_REVIEW;
+
+function resolveDailyReview(): DailyReview {
+  if (FORCE_DAILY_REVIEW === 'all-done' || FORCE_DAILY_REVIEW === 'incomplete' || FORCE_DAILY_REVIEW === 'none') {
+    return FORCE_DAILY_REVIEW;
+  }
+  return consumeDailyReview();
+}
+
+/** A daily review result tagged with the day it was resolved for, so the UI
+ * can tell "a new rollover happened" apart from "nothing changed" even when
+ * two different days happen to resolve to the same status (e.g. two
+ * 'incomplete' days in a row) — a bare string would look unchanged to React
+ * and silently fail to re-trigger the welcome dialog/confetti. */
+export interface DailyReviewEvent {
+  kind: DailyReview;
+  day: string;
+}
 
 export function useTodos() {
   const [store, setStore] = useState<TodoStore>(() => applyCarryOver(loadStore()));
+  const [dailyReview, setDailyReview] = useState<DailyReviewEvent>(() => ({
+    kind: resolveDailyReview(),
+    day: todayKey(),
+  }));
   const lastCheckedDay = useRef(todayKey());
 
   // Persist to localStorage whenever the store changes.
@@ -19,13 +44,16 @@ export function useTodos() {
     saveStore(store);
   }, [store]);
 
-  // Re-run carry-over if the real-world day rolls over while the app stays open.
+  // Re-run carry-over if the real-world day rolls over while the app stays
+  // open, and re-resolve the daily review too so the welcome message/confetti
+  // shows up for the new day without needing a manual reload.
   useEffect(() => {
     const checkDayRollover = () => {
       const current = todayKey();
       if (current !== lastCheckedDay.current) {
         lastCheckedDay.current = current;
         setStore((prev) => applyCarryOver(prev));
+        setDailyReview({ kind: resolveDailyReview(), day: current });
       }
     };
     const interval = setInterval(checkDayRollover, 60_000);
@@ -96,5 +124,5 @@ export function useTodos() {
     }));
   }, []);
 
-  return { getTodos, addTodo, toggleTodo, deleteTodo, updateTodoDuration };
+  return { getTodos, addTodo, toggleTodo, deleteTodo, updateTodoDuration, dailyReview };
 }

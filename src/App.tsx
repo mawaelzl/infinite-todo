@@ -8,7 +8,6 @@ import { useAccentColor } from './useAccentColor'
 import { useLocale } from './i18n/useLocale'
 import { randomTagline } from './i18n/taglines'
 import { randomWelcomeMessage } from './i18n/welcomeMessages'
-import { useDailyReview } from './useDailyReview'
 import './App.css'
 
 const RAINBOW_COLORS = [
@@ -23,18 +22,29 @@ const RAINBOW_COLORS = [
 ]
 
 function App() {
-  const { getTodos, addTodo, toggleTodo, deleteTodo, updateTodoDuration } = useTodos()
+  const { getTodos, addTodo, toggleTodo, deleteTodo, updateTodoDuration, dailyReview } = useTodos()
   const { accent, setAccent } = useAccentColor()
   const { locale } = useLocale()
   const tagline = useMemo(() => randomTagline(locale), [locale])
-  const dailyReview = useDailyReview()
-  const [welcomeMessage] = useState(() =>
-    dailyReview === 'none' ? null : randomWelcomeMessage(locale, dailyReview === 'all-done' ? 'allDone' : 'incomplete')
-  )
-  const [showWelcome, setShowWelcome] = useState(welcomeMessage !== null)
+  const welcomeMessage = useMemo(() => {
+    if (dailyReview.kind === 'none') return null
+    return randomWelcomeMessage(locale, dailyReview.kind === 'all-done' ? 'allDone' : 'incomplete')
+  }, [dailyReview, locale])
+
+  // Render-phase state adjustment: show the dialog the first time a given
+  // day's review comes in (initial mount, or a rollover while the app stays
+  // open), without re-showing it again on unrelated re-renders. Comparing
+  // `dailyReview.day` (not just `.kind`) means a second day in a row that
+  // happens to resolve to the same status still counts as "new".
+  const [shownForDay, setShownForDay] = useState<string | null>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
+  if (dailyReview.kind !== 'none' && dailyReview.day !== shownForDay) {
+    setShownForDay(dailyReview.day)
+    setShowWelcome(true)
+  }
 
   useEffect(() => {
-    if (dailyReview !== 'all-done') return
+    if (dailyReview.kind !== 'all-done') return
 
     // Every confetti() call spawns its whole particleCount from a single
     // origin, so firing 8 particles at once from one point looks like a
